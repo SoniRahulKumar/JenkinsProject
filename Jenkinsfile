@@ -1,19 +1,22 @@
 pipeline{
   agent any
   stages{
-    stage('Hello'){
+    stage('CodeCheckout'){
       steps{
-        echo('Hello world')
+        echo('Code Chekout from Repo')
+		git 'https://github.com/SoniRahulKumar/JenkinsProject.git'
       }
     }
-    stage('Build'){
+    stage('Maven Build'){
       steps{
         echo('Building')
+		sh label: ‘’, script: ‘mvn clean package ‘
       }
     }
-    stage('Deploy'){
+    stage('Docker image build'){
       steps{
         echo('Deploying')
+		sh ‘docker build -t pkw0301/prakash-app:1.0.0 .’
       }
     }
     stage('Test'){
