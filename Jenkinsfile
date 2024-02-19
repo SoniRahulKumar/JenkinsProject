@@ -16,7 +16,7 @@ pipeline{
     stage('Docker image build'){
       steps{
         echo('Deploying')
-		sh ‘docker build -t pkw0301/prakash-app:1.0.0 .’
+		dockerImage = docker.build("${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}")
       }
     }
     stage('Test'){
