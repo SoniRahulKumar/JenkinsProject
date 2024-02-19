@@ -1,46 +1,62 @@
-pipeline{
-  def application = "JenkinsProject"
-    
-  //Its mandatory to change the Docker Hub Account ID after this Repo is forked by an other person
-  def dockerhubaccountid = "SoniRahulKumar"
+node {
 	
-  // reference to maven
-  // ** NOTE: This 'maven-3.5.2' Maven tool must be configured in the Jenkins Global Configuration.   
-  def mvnHome = tool 'maven-3.5.2'
+    def application = "JenkinsProject"
+    
+    //Its mandatory to change the Docker Hub Account ID after this Repo is forked by an other person
+    def dockerhubaccountid = "SoniRahulKumar"
+	
+    // reference to maven
+    // ** NOTE: This 'maven-3.5.2' Maven tool must be configured in the Jenkins Global Configuration.   
+    def mvnHome = tool 'maven-3.5.2'
 
-  // holds reference to docker image
-  def dockerImage
+    // holds reference to docker image
+    def dockerImage
  
-  def dockerImageTag = "${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}"
-  agent any
-  stages{
-    stage('CodeCheckout'){
-      steps{
-        echo('Code Chekout from Repo')
-		git 'https://github.com/SoniRahulKumar/JenkinsProject.git'
-      }
+    def dockerImageTag = "${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}"
+    
+    stage('Clone Repo') { 
+      // Get some code from a GitHub repository
+      git url:'https://github.com/vdharmaraj/PGDO_Proj3.git',branch:'main' //update your forked repo
+      // Get the Maven tool.
+      // ** NOTE: This 'maven-3.5.2' Maven tool must be configured
+      // **       in the global configuration.           
+      mvnHome = tool 'maven-3.5.2'
+    }    
+  
+    stage('Build Project') {
+      // build project via maven
+      sh "'${mvnHome}/bin/mvn' clean install"
     }
-    stage('Maven Build'){
-      steps{
-        echo('Building')
-	      	sh "'${mvnHome}/bin/mvn' clean install"
-      }
+		
+    stage('Build Docker Image with new code') {
+      // build docker image
+      dockerImage = docker.build("${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}")
     }
-    stage('Docker image build'){
-      steps{
-        echo('Docker')
-		dockerImage = docker.build("${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}")
-      }
+	//push image to remote repository , in your jenkins you have to create the global credentials similar to the 'dockerHub' (credential ID)
+    stage('Push Image to Remote Repo'){
+	 echo "Docker Image Tag Name ---> ${dockerImageTag}"
+	     docker.withRegistry('', 'dockerHub') {
+             dockerImage.push("${env.BUILD_NUMBER}")
+             dockerImage.push("latest")
+            }
+	}
+   
+   stage('Remove running container with old code'){
+	   //remove the container which is already running, when running 1st time named container will not be available so we are usign 'True'
+	   //added -a option to remove stopped container also
+	  sh "docker rm -f \$(docker ps -a -f name=JenkinsProject -q) || true"   
+	       
     }
-    stage('Test'){
-      steps{
-        echo('Testing')
-      }
+	
+    stage('Deploy Docker Image with new changes'){
+	        
+	    //start container with the remote image
+	  sh "docker run --name JenkinsProject -d -p 9090:9090 ${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}"  
+	  
     }
-    stage('Release'){
-      steps{
-        echo('Releasing')
-      }
-    }
-  }
+	
+    stage('Remove old images') {
+		// remove docker old images
+		sh("docker rmi ${dockerhubaccountid}/${application}:latest -f")
+   }
 }
