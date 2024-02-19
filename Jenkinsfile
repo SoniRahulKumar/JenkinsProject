@@ -10,7 +10,7 @@ pipeline{
     stage('Maven Build'){
       steps{
         echo('Building')
-		sh label: ‘’, script: ‘mvn clean package ‘
+	      	sh "'${mvnHome}/bin/mvn' clean install"
       }
     }
     stage('Docker image build'){
