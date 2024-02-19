@@ -15,7 +15,7 @@ pipeline{
     }
     stage('Docker image build'){
       steps{
-        echo('Deploying')
+        echo('Docker')
 		dockerImage = docker.build("${dockerhubaccountid}/${application}:${env.BUILD_NUMBER}")
       }
     }
