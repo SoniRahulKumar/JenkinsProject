@@ -1,9 +1,9 @@
 FROM openjdk:8-jdk-alpine
 
+WORKDIR /opt/app
+
 ARG JAR_FILE=target/find-links.jar
 ARG JAR_LIB_FILE=target/lib/
-
-WORKDIR /usr/local/runme
 
 COPY ${JAR_FILE} app.jar
 
