@@ -10,7 +10,7 @@ pipeline{
     stage('Build'){
       steps{
         echo('Building')
-	      	sh "docker build -t JenkinsProject ."
+	      	sh "docker build -t jenkinsproject ."
       }
     }
     stage('Docker image build'){
