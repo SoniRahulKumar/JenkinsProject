@@ -10,3 +10,5 @@ COPY ${JAR_FILE} app.jar
 ADD ${JAR_LIB_FILE} lib/
 
 ENTRYPOINT ["java","-jar","app.jar"]
+
+EXPOSE 8000
