@@ -1,21 +1,25 @@
 pipeline{
   agent any
+  environment {
+	MAVEN_HOME = tool 'myMaven'
+	PATH = "$MAVEN_HOME/bin:$PATH"
+  }
   stages{
-    stage('CodeCheckout'){
+    stage('Clone Repo'){
       steps{
-        echo('Code Chekout from Repo')
-		git url: "https://github.com/SoniRahulKumar/JenkinsProject.git" , branch: "main"
+        echo('Code Chekout from Repository')
+	      git url: 'https://github.com/SoniRahulKumar/MicroserviceExample.git' , branch: 'master'
       }
     }
     stage('Build'){
       steps{
-        echo('Building')
-	      	sh "docker build -t dockerfile ."
+	echo('Building')
+	  sh 'mvn -B -DskipTests clean package'
       }
     }
-    stage('Docker image build'){
+    stage('Deploy'){
       steps{
-        echo('Docker')
+        echo('Deploying')
       }
     }
     stage('Test'){
